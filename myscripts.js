@@ -1,16 +1,32 @@
 //create multiple agents
 function moveAgents(city,movingSize){
-  let res = city;
   for(let i = 0 ; i<movingSize;i++){
-    let randX = Math.floor(Math.random() * res[0].length);
-    let randY = Math.floor(Math.random() * res[0].length);
-    let randNewX = Math.floor(Math.random() * res[0].length);
-    let randNewY = Math.floor(Math.random() * res[0].length);
-    let randInhabitant = Math.floor(Math.random() * res[randX][randY].inhabitants.length);
-    res[randNewX][randNewY].inhabitants.push(city[randX][randY].inhabitants[randInhabitant]);
-    res[randX][randY].inhabitants.splice(randInhabitant,1);
+    let randX = Math.floor(Math.random() * city[0].length);
+    let randY = Math.floor(Math.random() * city[0].length);
+    let randNewX = Math.floor(Math.random() * city[0].length);
+    let randNewY = Math.floor(Math.random() * city[0].length);
+    let randInhabitant = Math.floor(Math.random() * city[randX][randY].inhabitants.length);
+    if(city[randX][randY].inhabitants[randInhabitant]===undefined){
+      continue
+    }
+    else{
+      city[randNewX][randNewY].inhabitants.push(city[randX][randY].inhabitants[randInhabitant]);
+      city[randX][randY].inhabitants.splice(randInhabitant,1);
+    }
+    let agentAvgIncome = 0;
+    for(let i = 0; i< city[0].length;i++){
+      for(let j = 0;j<city[0].length;j++){
+        for(let k=0; k<city[i][j].inhabitants.length;k++){
+          agentAvgIncome = agentAvgIncome+city[i][j].inhabitants[k].income
+          
+        }
+        city[i][j].averageIncome = agentAvgIncome /city[i][j].inhabitants.length;
+        agentAvgIncome = 0;
+      }
+    }
+    
   }
-  return res;
+  return city;
 }
 function generateCity(agentNumber,citySize) {
   let agents = {};
@@ -57,10 +73,11 @@ function createNewAgent(citySize) {
   return agent;
 }
 
-let test = generateCity(20, 3);
+let test = generateCity(100, 5);
 console.log(test);
-let test2 = moveAgents(test,100);
-console.log(test2);
+
+// let test2 = ;
+// console.log(test2);
 
 
 $(document).ready(function () {
@@ -96,6 +113,8 @@ $(document).ready(function () {
         });
       }
     }
+    test = moveAgents(test,100);
+    console.log(test);
     i++;
   }, 1000);
 });
