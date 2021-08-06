@@ -4,19 +4,73 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>Demo</title>
-  <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
-  <script src="myscripts.js"></script>
   <link rel="stylesheet" href="mystyles.css">
+  <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+  <script type="text/javascript" src="smoothie.js"></script>
+  <script src="myscripts.js"></script>
+  <title>Demo</title>
 </head>
 
 <body>
-  
-  <div id="test" class="container">
+  <div class = "sim">
+    <h2>City Simulator</h2>
+    <div id="test" class="container">
 
+    </div>
+  </div>
+  
+  <div class = "graph">
+    <h2>Bid Graph (highest/lowest)</h2>
+    <canvas id="mycanvas" width="350" height="200"></canvas>
+    <div class="info">
+      <div id="max-bid"></div>
+      <div id="min-bid"></div>
+    </div>
+    
   </div>
   
   <script>
+    let test = generateCity(50, 3,50);
+    let smoothie = new SmoothieChart({maxValue:16000,minValue:0});
+    smoothie.streamTo(document.getElementById("mycanvas"), 1000 /*delay*/); 
+    let line1 = new TimeSeries();
+    let line2 = new TimeSeries();
+    smoothie.addTimeSeries(line1,{ strokeStyle:'rgb(0, 255, 0)', lineWidth:3 });
+    smoothie.addTimeSeries(line2,{ strokeStyle:'rgb(255, 0, 255)', lineWidth:3 });
+    let maxBid = undefined;
+    let minBid = undefined;
+    let arrInhabitant = [];
+
+    // Add a random value to each line every second
+    setInterval(function() {
+      for(let i = 0 ; i<test[0].length;i++){
+        for(let j = 0; j<test[0].length;j++){
+          for(let k = 0; k<test[i][j].inhabitants.length;k++){
+            arrInhabitant.push(test[i][j].inhabitants[k]);
+          }
+        }
+      }
+      arrInhabitant = arrInhabitant.sort(sortByBid);
+      maxBid = arrInhabitant[0].bid;
+      minBid = arrInhabitant[arrInhabitant.length-1].bid;
+      line1.append(new Date().getTime(), maxBid);
+      line2.append(new Date().getTime(), minBid);
+      let element1 = document.getElementById("max-bid");
+      let element2 = document.getElementById("min-bid");
+      element1.innerHTML = "";
+      element2.innerHTML = "";
+      let text1 = document.createTextNode("Max bid: "+maxBid.toFixed(2));
+      let text2 = document.createTextNode("Min bid: "+minBid.toFixed(2));
+      element1.appendChild(text1);
+      element2.appendChild(text2);
+      arrInhabitant=[];
+    }, 1000);
+
+    // Add to SmoothieChart
+    smoothie.addTimeSeries(line1);
+    smoothie.addTimeSeries(line2);
+
+  
   let element = document.getElementById("test");
   element.style.width = (52 * test[0].length) + "px";
   
@@ -29,6 +83,7 @@
       tag.setAttribute('class', 'item ' + i + "-" + j);
     }
   }
+ 
   </script>
 </body>
 

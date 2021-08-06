@@ -1,35 +1,48 @@
+function sortByAttractiveness(obj1, obj2) {
+    return obj2.attractiveness- obj1.attractiveness;
+}
+function sortByBid(obj1, obj2) {
+    return obj2.bid- obj1.bid;
+}
 //create multiple agents
 function moveAgents(city,movingSize){
   outsiderSize = city.outsiders.length;
   let swap = false;
   let count = 0 ;
-  for (let i = 0 ; i< outsiderSize ;i++){
-    for (let j = 0 ; j< city[0].length;j++){
-      for (let k = 0; k< city[0].length;k++){
-        for (let u = 0; u<city[j][k].inhabitants.length;u++){
-          if (city[j][k].inhabitants[u].bid <= city.outsiders[i].income){
-            //swap
-            city[j][k].inhabitants.push(city.outsiders[i]);
-            city[j][k].inhabitants[u].bid = 0;
-            city.outsiders.push(city[j][k].inhabitants[u]);
-            city[j][k].inhabitants.splice(u,1);
-            swap = true;
-            count++;
-            break;
-          }
-          else{
-            if(k===city[0].length && j===city[0].length && u===city[j][k].inhabitants.length){
-              city.outsiders.push(city.outsiders[i]);
-            }
-          }
+
+  //swapping 1. push every city into one single array
+  let arrayCity = [];
+  for(let i = 0 ; i<city[0].length;i++){
+    for(let j = 0; j<city[0].length;j++){
+      arrayCity.push(city[i][j]);
+    }
+  }
+  //2. sort the array by the attractiveness
+  arrayCity = arrayCity.sort(sortByAttractiveness);
+  // arrayCity.forEach(element => console.log(element.attractiveness));
+  //3. swapping by choosing the city with the most attractiveness first
+  for( let i = 0 ; i<outsiderSize;i++){
+    for(let j = 0 ; j<arrayCity.length;j++){
+      for(let k = 0 ; k<arrayCity[j].inhabitants.length;k++){
+        //swap
+        if(arrayCity[j].inhabitants[k].bid<= city.outsiders[i].income){
+          city[arrayCity[j].x][arrayCity[j].y].inhabitants.push(city.outsiders[i]);
+          city[arrayCity[j].x][arrayCity[j].y].inhabitants[k].bid = 0;
+          city.outsiders.push(city[arrayCity[j].x][arrayCity[j].y].inhabitants[k]);
+          city[arrayCity[j].x][arrayCity[j].y].inhabitants.splice(k,1);
+          swap = true;
+          count++;
+          break;
         }
-        if (swap === true){
-          break
+        else{
+          if(j===arrayCity.length && k===arrayCity[j].inhabitants.length){
+            city.outsiders.push(city.outsiders[i]);
+          }
         }
       }
       if (swap === true){
         swap = false;
-        break
+        break;
       }
     }
   }
@@ -66,7 +79,7 @@ function moveAgents(city,movingSize){
   for(let i=0;i<city[0].length;i++){
     for(let j = 0 ; j<city[0].length;j++){
       for(let k=0; k<city[i][j].inhabitants.length;k++){
-        if(city[i][j].inhabitants[k].bid===0){
+        if(city[i][j].inhabitants[k].bid===0){ // just recently move to the city (decide the first price)
           city[i][j].inhabitants[k].bid=city[i][j].attractiveness*city[i][j].averageIncome*2;
         }
         else{
@@ -147,25 +160,47 @@ function generateCity(agentNumber,citySize,outsiders) {
   
   return city;
 }
+function randn_bm(min, max, skew) {
+  let u = 0, v = 0;
+  while(u === 0) u = Math.random() //Converting [0,1) to (0,1)
+  while(v === 0) v = Math.random()
+  let num = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v )
+  
+  num = num / 10.0 + 0.5 // Translate to 0 -> 1
+  if (num > 1 || num < 0) 
+    num = randn_bm(min, max, skew) // resample between 0 and 1 if out of range
+  
+  else{
+    num = Math.pow(num, skew) // Skew
+    num *= max - min // Stretch to fill range
+    num += min // offset to min
+  }
+  return num
+}
+
 function createNewAgent(citySize) {
   // create single agent
   const agent = {};
-  agent.income = Math.floor(Math.random() * 10000);
+  agent.income = Math.floor(randn_bm(1, 15000, 1.25));
   agent.startX = Math.floor(Math.random() * citySize);
   agent.startY = Math.floor(Math.random() * citySize);
   agent.bid = 0;
   return agent;
 }
 
-let test = generateCity(100, 5,10);
 
-
-// let test2 = ;
-// console.log(test2);
+// for(let i = 0; i<test[0].length;i++){
+//   for(let j = 0 ; j<test[0].length;j++){
+//     for(let k = 0 ; k<test[i][j].inhabitants.length;k++){
+//       console.log(test[i][j].inhabitants[k].income);
+//     }
+//   }
+// }
 
 
 $(document).ready(function () {
   setInterval(function () {
+    
     color="navy";
     let i = 0;
     let size = test[0].length;
@@ -206,7 +241,7 @@ $(document).ready(function () {
       }
     }
     test = moveAgents(test,15);
-    console.log(JSON.stringify(test));
+    //console.log(JSON.stringify(test));
     
     i++;
   }, 1000);

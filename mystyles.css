@@ -29,3 +29,15 @@
   border-width: 0.00005px;
 
 }
+
+.graph {
+  margin-top: 2.5%;
+}
+
+.info {
+  margin-top: 0.5%;
+}
+
+body {
+  padding-left: 1%;
+}
