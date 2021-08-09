@@ -25,20 +25,23 @@
     <div class="info">
       <div id="max-bid"></div>
       <div id="min-bid"></div>
+      <div id="gini-co"></div>
     </div>
     
   </div>
   
   <script>
-    let test = generateCity(50, 3,50);
-    let smoothie = new SmoothieChart({maxValue:16000,minValue:0});
+    let test = generateCity(50, 4,50);
+    let smoothie = new SmoothieChart();
     smoothie.streamTo(document.getElementById("mycanvas"), 1000 /*delay*/); 
     let line1 = new TimeSeries();
     let line2 = new TimeSeries();
+    let line3 = new TimeSeries();
     smoothie.addTimeSeries(line1,{ strokeStyle:'rgb(0, 255, 0)', lineWidth:3 });
     smoothie.addTimeSeries(line2,{ strokeStyle:'rgb(255, 0, 255)', lineWidth:3 });
     let maxBid = undefined;
     let minBid = undefined;
+    let giniCo = undefined;
     let arrInhabitant = [];
 
     // Add a random value to each line every second
@@ -50,19 +53,36 @@
           }
         }
       }
+      // for(let i = 0; i<test.outsiders.length;i++){
+      //   console.log("bid:"+test.outsiders[i].bid);
+      // }
       arrInhabitant = arrInhabitant.sort(sortByBid);
+
       maxBid = arrInhabitant[0].bid;
       minBid = arrInhabitant[arrInhabitant.length-1].bid;
+      giniCo = test.giniCoefficient*100;
+
       line1.append(new Date().getTime(), maxBid);
       line2.append(new Date().getTime(), minBid);
+      line3.append(new Date().getTime(), giniCo);
+
+      //get div element
       let element1 = document.getElementById("max-bid");
       let element2 = document.getElementById("min-bid");
+      let element3 = document.getElementById("gini-co");
+
+      //empty previous value
       element1.innerHTML = "";
       element2.innerHTML = "";
+      element3.innerHTML = "";
+
+      //put the value inside div element
       let text1 = document.createTextNode("Max bid: "+maxBid.toFixed(2));
       let text2 = document.createTextNode("Min bid: "+minBid.toFixed(2));
+      let text3 = document.createTextNode("gini coefficient: "+giniCo.toFixed(2) + " %");
       element1.appendChild(text1);
       element2.appendChild(text2);
+      element3.appendChild(text3);
       arrInhabitant=[];
     }, 1000);
 

@@ -5,7 +5,7 @@ function sortByBid(obj1, obj2) {
     return obj2.bid- obj1.bid;
 }
 //create multiple agents
-function moveAgents(city,movingSize){
+function moveAgents(city){
   outsiderSize = city.outsiders.length;
   let swap = false;
   let count = 0 ;
@@ -35,8 +35,9 @@ function moveAgents(city,movingSize){
           break;
         }
         else{
-          if(j===arrayCity.length && k===arrayCity[j].inhabitants.length){
+          if(j===(arrayCity.length)-1 && k===(arrayCity[j].inhabitants.length)-1){
             city.outsiders.push(city.outsiders[i]);
+            count++;
           }
         }
       }
@@ -47,7 +48,7 @@ function moveAgents(city,movingSize){
     }
   }
   for(let i =0 ;i<count;i++){
-    city.outsiders.splice(i,1);
+    city.outsiders.splice(0,1);
   }
 
   //update avg income
@@ -76,8 +77,8 @@ function moveAgents(city,movingSize){
     }
   }
   //update bid
-  for(let i=0;i<city[0].length;i++){
-    for(let j = 0 ; j<city[0].length;j++){
+  for(let i=0;i<size;i++){
+    for(let j = 0 ; j<size;j++){
       for(let k=0; k<city[i][j].inhabitants.length;k++){
         if(city[i][j].inhabitants[k].bid===0){ // just recently move to the city (decide the first price)
           city[i][j].inhabitants[k].bid=city[i][j].attractiveness*city[i][j].averageIncome*2;
@@ -87,7 +88,29 @@ function moveAgents(city,movingSize){
         }
       }
     }
-  }  
+  }
+  //update gini coff
+  let gini = 0;
+  let xBar = 0;
+  let n = 0;
+  let arrIncome = [];
+  for(let i = 0 ; i< size ; i++){
+    for(let j = 0 ; j< size; j++){
+      for(let k = 0 ; k<city[i][j].inhabitants.length;k++){
+        arrIncome.push(city[i][j].inhabitants[k].income);
+      }
+    }
+  }
+  for(let i = 0; i< arrIncome.length;i++){
+    for(let j = 0;j<arrIncome.length;j++){
+      gini = gini + Math.abs(arrIncome[i]-arrIncome[j]) 
+    }
+    xBar = xBar + arrIncome[i];
+    n++;
+  }
+  xBar /= n;
+  gini = gini/(2*(Math.pow(n,2))*xBar);
+  city.giniCoefficient = gini;
   return city;
 }
 function generateCity(agentNumber,citySize,outsiders) {
@@ -156,8 +179,29 @@ function generateCity(agentNumber,citySize,outsiders) {
       }
     }
   }
- 
-  
+  //set Gini Coefficient
+  let gini = 0;
+  let xBar = 0;
+  let n = 0;
+  let arrIncome = [];
+  for(let i = 0 ; i< citySize ; i++){
+    for(let j = 0 ; j< citySize; j++){
+      for(let k = 0 ; k<city[i][j].inhabitants.length;k++){
+        arrIncome.push(city[i][j].inhabitants[k].income);
+      }
+    }
+  }
+  for(let i = 0; i< arrIncome.length;i++){
+    for(let j = 0;j<arrIncome.length;j++){
+      gini = gini + Math.abs(arrIncome[i]-arrIncome[j]) 
+    }
+    xBar = xBar + arrIncome[i];
+    n++;
+  }
+  xBar /= n;
+  gini = gini/(2*(Math.pow(n,2))*xBar);
+  console.log(xBar)
+  city.giniCoefficient = gini;
   return city;
 }
 function randn_bm(min, max, skew) {
@@ -240,7 +284,7 @@ $(document).ready(function () {
         });
       }
     }
-    test = moveAgents(test,15);
+    test = moveAgents(test);
     //console.log(JSON.stringify(test));
     
     i++;
